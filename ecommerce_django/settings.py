@@ -46,7 +46,9 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework',
     'user',
-    'product'
+    'product',
+    'order',
+    'store'
 ]
 AUTH_USER_MODEL = 'user.Profile'
 
