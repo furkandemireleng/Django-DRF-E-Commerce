@@ -1,0 +1,70 @@
+version: "3.7"
+
+services:
+  web:
+    container_name: ecommerce_app
+    hostname: ecommerce_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sh -c "gunicorn ofis2.wsgi:application --bind 0.0.0.0:8000"
+    #command: sh -c "python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/usr/src/app/
+    depends_on:
+      - postgres
+      - rabbitmq
+      - redis
+      - celery
+    env_file:
+      - base/.env
+  postgres:
+    image: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+      - "15432:15432"
+    env_file:
+      - base/.env
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+  rabbitmq:
+    image: rabbitmq:3.9.12
+    env_file:
+      - base/.env
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  redis:
+    image: redis:6.2.6
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A ofis2 worker -l info
+    depends_on:
+      - rabbitmq
+      - redis
+    env_file:
+      - base/.env
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - web
+
+volumes:
+  postgres_data:
+  static-data:
