@@ -1,4 +1,5 @@
 Django E-Commerce Backend Project uses DRF <br>
+Implement Concurrency logic for buygin products
 
 First you need to install packages
 ```
